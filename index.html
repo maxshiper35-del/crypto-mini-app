@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoMind Dashboard</title>
+    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f1419;
+            --bg-secondary: #1a1f26;
+            --bg-tertiary: #252d38;
+            --text-primary: #ffffff;
+            --text-secondary: #a8adb8;
+            --accent-green: #00d084;
+            --accent-red: #ff4b5c;
+            --accent-blue: #58a6ff;
+            --accent-yellow: #f0c040;
+            --border-color: #30363d;
+            --success: #3fb950;
+            --danger: #f85149;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 12px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .refresh-btn {
+            background: var(--accent-blue);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .refresh-btn.loading {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-blue);
+            background: var(--bg-tertiary);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .sentiment-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .sentiment-emoji {
+            font-size: 48px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .sentiment-text h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: var(--accent-blue);
+        }
+
+        .sentiment-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .stat {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .stat-value.negative {
+            color: var(--accent-red);
+        }
+
+        .alerts-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .alert-item {
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--accent-yellow);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-symbol {
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .alert-price {
+            color: var(--accent-yellow);
+            font-weight: 500;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #00e69c;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7ab3ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff7373;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .gain {
+            color: var(--accent-green);
+        }
+
+        .loss {
+            color: var(--accent-red);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: var(--accent-blue);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: var(--bg-primary);
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 30px;
+        }
+
+        @media (max-height: 800px) {
+            .card, .stat, .alerts-container {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🤖 CryptoMind</div>
+            <button class="refresh-btn" id="refreshBtn" title="Обновить">↻</button>
+        </header>
+
+        <!-- Sentiment Section -->
+        <div class="sentiment-box" id="sentimentBox">
+            <div class="sentiment-emoji">😐</div>
+            <div class="sentiment-text">
+                <h3 id="sentimentLabel">Loading...</h3>
+                <p id="sentimentMood">Получаю данные сейчас...</p>
+            </div>
+        </div>
+
+        <!-- Market Stats -->
+        <div class="grid-2" id="marketStats">
+            <div class="stat">
+                <div class="stat-label">BTC Доминанс</div>
+                <div class="stat-value" id="btcDom">--</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">ETH Доминанс</div>
+                <div class="stat-value" id="ethDom">--</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Market Cap</div>
+                <div class="stat-value" id="mcap">--</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">24h Change</div>
+                <div class="stat-value" id="mcapChange">--</div>
+            </div>
+        </div>
+
+        <!-- Active Alerts -->
+        <div class="alerts-container">
+            <div class="card-title">🔔 Твои Алерты</div>
+            <div id="alertsList">
+                <p style="color: var(--text-secondary); font-size: 13px;">Нет активных алертов. Установи новый! 👇</p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="button-group">
+            <button class="btn-primary" id="setAlertBtn">➕ Новый Алерт</button>
+            <button class="btn-secondary" id="viewSignalsBtn">📊 Сигналы</button>
+        </div>
+
+        <!-- Set Alert Modal -->
+        <div class="modal" id="alertModal">
+            <div class="modal-content">
+                <div class="modal-title">🔔 Установи Алерт на Цену</div>
+                <form id="alertForm">
+                    <div class="form-group">
+                        <label>Монета (например: BTC, ETH)</label>
+                        <input type="text" id="coinInput" placeholder="BTC" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Целевая Цена ($)</label>
+                        <input type="number" id="priceInput" placeholder="95000" required step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Когда уведомить?</label>
+                        <select id="directionSelect" required>
+                            <option value="above">Когда цена ПОДНИМЕТСЯ выше</option>
+                            <option value="below">Когда цена УПАДЁТ ниже</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-danger" id="cancelAlertBtn">Отмена</button>
+                        <button type="submit" class="btn-primary">Установить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Signals Modal -->
+        <div class="modal" id="signalsModal">
+            <div class="modal-content">
+                <div class="modal-title">📊 Топ Сигналы</div>
+                <div id="signalsList" style="max-height: 400px; overflow-y: auto; color: var(--text-secondary); font-size: 13px;">
+                    Загружаю сигналы...
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="closeSignalsBtn" style="grid-column: 1 / -1;">Закрыть</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            CryptoMind AI Bot • Powered by n8n • Telegram Mini App
+        </footer>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
